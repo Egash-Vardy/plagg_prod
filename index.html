@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Магазин услуг</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; background: #1a1a1a; color: white; padding: 20px; }
+        .card { background: #333; padding: 20px; margin: 10px; border-radius: 10px; display: inline-block; width: 250px; }
+        button { background: #ffcc00; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px; font-weight: bold; }
+        button:hover { background: #e6b800; }
+    </style>
+</head>
+<body>
+
+    <h1>Мой магазин</h1>
+
+    <div class="card">
+        <h3>Водяной знак</h3>
+        <p>Цена: 50 звезд</p>
+        <button onclick="order('Водяной знак')">Купить</button>
+    </div>
+
+    <div class="card">
+        <h3>Заказ эдита</h3>
+        <p>Цена: 350 звезд</p>
+        <button onclick="order('Заказ эдита')">Купить</button>
+    </div>
+
+    <div class="card">
+        <h3>Фото под заказ</h3>
+        <p>Цена: 85 звезд</p>
+        <button onclick="order('Фото под заказ')">Купить</button>
+    </div>
+
+    <script>
+        function order(item) {
+            // Замени на свою ссылку в Telegram или Discord
+            const contact = "https://t.me/ТВОЙ_НИК"; 
+            alert("Чтобы купить " + item + ", перейди в мой профиль для связи!");
+            window.location.href = contact;
+        }
+    </script>
+</body>
+</html>
