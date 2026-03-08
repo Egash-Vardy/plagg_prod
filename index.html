@@ -3,15 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мой магазин</title>
+    <title>Магазин услуг</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: white; text-align: center; padding: 20px; }
-        .container { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 30px; }
+        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: white; text-align: center; padding: 20px; margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
+        .container { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 30px; flex: 1; }
         .card { background: #1e1e1e; padding: 20px; border-radius: 15px; width: 220px; border: 1px solid #333; }
         button { background: #ffcc00; border: none; padding: 12px 25px; cursor: pointer; border-radius: 8px; font-weight: bold; margin-top: 10px; transition: 0.3s; }
         button:hover { background: #e6b800; transform: scale(1.05); }
         
-        /* Стили модального окна */
+        /* Подвал */
+        footer { margin-top: 50px; padding: 20px; font-size: 0.8em; color: #888; border-top: 1px solid #333; }
+        
+        /* Модальное окно */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); }
         .modal-content { background: #252525; margin: 15% auto; padding: 30px; width: 300px; border-radius: 15px; }
         .close-btn { background: #555; color: white; margin-top: 15px; }
@@ -41,11 +44,16 @@
         </div>
     </div>
 
+    <footer>
+        <p>© 2026 Магазин услуг. Все права защищены.</p>
+        <p>Важное примечание: Продавец не несет ответственности за комиссию платформы при переводе средств.</p>
+    </footer>
+
     <div id="myModal" class="modal">
         <div class="modal-content">
             <h2 id="modalText"></h2>
             <p>Для покупки напишите мне в Telegram:</p>
-            <a href="https://t.me/Plagg_nn" style="color: #ffcc00; font-size: 1.2em;">Открыть Telegram</a>
+            <a href="https://t.me/ТВОЙ_НИК" style="color: #ffcc00; font-size: 1.2em;">Открыть Telegram</a>
             <br>
             <button class="close-btn" onclick="closeModal()">Закрыть</button>
         </div>
