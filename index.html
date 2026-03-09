@@ -10,19 +10,23 @@
         header h1 { margin: 0; color: #ffcc00; font-size: 2.5em; letter-spacing: 2px; }
         
         .container { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 30px; flex: 1; padding: 20px; }
-        .card { background: #1e1e1e; padding: 20px; border-radius: 15px; width: 250px; border: 1px solid #333; position: relative; }
-        .discount-badge { background: red; color: white; padding: 5px; border-radius: 5px; font-size: 0.8em; position: absolute; top: 10px; right: 10px; display: none; }
+        .card { background: #1e1e1e; padding: 20px; border-radius: 15px; width: 250px; border: 1px solid #333; position: relative; transition: 0.3s; }
+        .card:hover { border-color: #ffcc00; }
+        
+        .discount-badge { background: #ff3e3e; color: white; padding: 5px 10px; border-radius: 5px; font-size: 0.8em; position: absolute; top: 10px; right: 10px; font-weight: bold; }
         
         button { background: #ffcc00; border: none; padding: 12px 25px; cursor: pointer; border-radius: 8px; font-weight: bold; margin-top: 10px; transition: 0.3s; }
         button:hover { background: #e6b800; transform: scale(1.05); }
         
         footer { margin-top: 50px; padding: 20px; font-size: 0.8em; color: #888; border-top: 1px solid #333; }
-        .admin-btn { background: transparent; color: #333; border: none; cursor: pointer; font-size: 0.7em; }
+        .admin-trigger { background: transparent; color: #222; border: none; cursor: pointer; font-size: 0.7em; margin-top: 10px; }
 
         /* Модальные окна */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; }
-        .modal-content { background: #252525; margin: 10% auto; padding: 30px; width: 350px; border-radius: 15px; text-align: left; }
-        .modal-content input { width: 90%; padding: 10px; margin: 10px 0; background: #333; border: 1px solid #555; color: white; border-radius: 5px; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100; }
+        .modal-content { background: #252525; margin: 10% auto; padding: 30px; width: 350px; border-radius: 15px; text-align: left; border: 1px solid #444; }
+        .modal-content h2 { margin-top: 0; color: #ffcc00; }
+        .modal-content input { width: 94%; padding: 10px; margin: 10px 0; background: #333; border: 1px solid #555; color: white; border-radius: 5px; }
+        
         .close-btn { background: #555; color: white; margin-top: 15px; width: 100%; }
         .save-btn { background: #28a745; color: white; width: 100%; }
     </style>
@@ -39,43 +43,46 @@
     <footer>
         <p>© 2026 Plagg Prod. Все права защищены.</p>
         <p>Важное примечание: Продавец не несет ответственности за комиссию платформы при переводе средств.</p>
-        <button class="admin-btn" onclick="openAdmin()">Админ-панель</button>
+        <button class="admin-trigger" onclick="checkAdmin()">Панель управления</button>
     </footer>
 
     <div id="buyModal" class="modal">
         <div class="modal-content" style="text-align: center;">
             <h2 id="modalText"></h2>
             <p>Для покупки напишите мне в Telegram:</p>
-            <a href="https://t.me/ТВОЙ_НИК" id="tgLink" style="color: #ffcc00; font-size: 1.2em; text-decoration: none;">Открыть Telegram</a>
+            <a href="https://t.me/ТВОЙ_НИК" style="color: #ffcc00; font-size: 1.2em; text-decoration: none; font-weight: bold;">@ТВОЙ_НИК</a>
             <button class="close-btn" onclick="closeModal('buyModal')">Закрыть</button>
         </div>
     </div>
 
     <div id="adminModal" class="modal">
         <div class="modal-content">
-            <h2>Настройки товаров</h2>
+            <h2>Настройки Plagg Prod</h2>
             <div id="adminFields"></div>
-            <button class="save-btn" onclick="saveChanges()">Сохранить для себя</button>
+            <button class="save-btn" onclick="saveChanges()">Сохранить изменения</button>
             <button class="close-btn" onclick="closeModal('adminModal')">Отмена</button>
-            <p style="font-size: 0.7em; color: #888; margin-top: 10px;">*После сохранения обнови страницу. Чтобы применить изменения для всех, нужно обновить код на GitHub.</p>
         </div>
     </div>
 
     <script>
-        // Начальные данные
-        let products = JSON.parse(localStorage.getItem('plagg_products')) || [
+        // Данные по умолчанию
+        const defaultProducts = [
             { id: 0, name: "Водяной знак", price: 50, discount: "" },
             { id: 1, name: "Заказ эдита", price: 350, discount: "" },
             { id: 2, name: "Фото под заказ", price: 85, discount: "" }
         ];
 
+        // Загрузка данных из памяти браузера или использование стандартных
+        let products = JSON.parse(localStorage.getItem('plagg_products')) || defaultProducts;
+
         function renderProducts() {
             const container = document.getElementById('productContainer');
             container.innerHTML = '';
             products.forEach(p => {
+                const discountHtml = p.discount ? `<div class="discount-badge">-${p.discount}%</div>` : '';
                 container.innerHTML += `
                     <div class="card">
-                        <div class="discount-badge" style="display: ${p.discount ? 'block' : 'none'}">-${p.discount}%</div>
+                        ${discountHtml}
                         <h3>${p.name}</h3>
                         <p>Цена: <b>${p.price} звезд</b></p>
                         <button onclick="openBuyModal('${p.name}')">Купить</button>
@@ -84,9 +91,15 @@
             });
         }
 
-        function openBuyModal(name) {
-            document.getElementById('modalText').innerText = "Выбрано: " + name;
-            document.getElementById('buyModal').style.display = "block";
+        function checkAdmin() {
+            const login = prompt("Введите имя администратора:");
+            const pass = prompt("Введите пароль:");
+
+            if (login === "Plagg" && pass === "plagg_nn") {
+                openAdmin();
+            } else {
+                alert("Ошибка доступа! Неверные данные.");
+            }
         }
 
         function openAdmin() {
@@ -94,10 +107,11 @@
             fields.innerHTML = '';
             products.forEach((p, index) => {
                 fields.innerHTML += `
-                    <div style="border-bottom: 1px solid #444; margin-bottom: 10px; padding-bottom: 10px;">
+                    <div style="border-bottom: 1px solid #444; margin-bottom: 15px; padding-bottom: 5px;">
+                        <label style="font-size: 0.8em; color: #aaa;">Товар #${index + 1}</label>
                         <input type="text" value="${p.name}" id="name-${index}" placeholder="Название">
-                        <input type="number" value="${p.price}" id="price-${index}" placeholder="Цена">
-                        <input type="text" value="${p.discount}" id="disc-${index}" placeholder="Скидка % (пусто если нет)">
+                        <input type="number" value="${p.price}" id="price-${index}" placeholder="Цена (звезд)">
+                        <input type="text" value="${p.discount}" id="disc-${index}" placeholder="Скидка % (если есть)">
                     </div>
                 `;
             });
@@ -111,13 +125,20 @@
                 p.discount = document.getElementById(`disc-${index}`).value;
             });
             localStorage.setItem('plagg_products', JSON.stringify(products));
+            alert("Настройки сохранены локально!");
             location.reload();
+        }
+
+        function openBuyModal(name) {
+            document.getElementById('modalText').innerText = "Выбрано: " + name;
+            document.getElementById('buyModal').style.display = "block";
         }
 
         function closeModal(id) {
             document.getElementById(id).style.display = "none";
         }
 
+        // Запуск при загрузке
         renderProducts();
     </script>
 </body>
