@@ -5,74 +5,114 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plagg Prod | Магазин</title>
     <style>
-        /* Стили прежние, добавлено только новое */
-        body { font-family: sans-serif; background: #121212; color: white; text-align: center; margin: 0; padding-bottom: 50px; }
+        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: white; text-align: center; margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
+        header { padding: 40px 20px; background: #1a1a1a; border-bottom: 2px solid #ffcc00; }
+        header h1 { margin: 0; color: #ffcc00; font-size: 2.5em; letter-spacing: 2px; }
+        .container { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 30px; flex: 1; padding: 20px; }
+        .card { background: #1e1e1e; padding: 0 0 20px 0; border-radius: 15px; width: 250px; border: 1px solid #333; overflow: hidden; }
+        .card img { width: 100%; height: 150px; object-fit: cover; }
+        button { background: #ffcc00; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px; font-weight: bold; margin-top: 10px; }
         
-        /* Уведомление-тост */
-        #toast { position: fixed; bottom: 20px; right: 20px; background: #28a745; color: white; padding: 15px 25px; border-radius: 8px; display: none; z-index: 1000; }
-        
-        /* Модалки и кнопки */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 500; }
-        .modal-content { background: #252525; margin: 10% auto; padding: 30px; width: 300px; border-radius: 15px; border: 1px solid #444; }
+        /* Модальные окна */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; overflow-y: auto; }
+        .modal-content { background: #252525; margin: 5% auto; padding: 30px; width: 350px; border-radius: 15px; border: 1px solid #444; }
         input { width: 90%; padding: 10px; margin: 5px 0; background: #333; border: 1px solid #555; color: white; border-radius: 5px; }
-        button { background: #ffcc00; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px; font-weight: bold; }
+        
+        /* Уведомление */
+        #toast { position: fixed; bottom: 20px; right: 20px; background: #28a745; color: white; padding: 15px 25px; border-radius: 8px; display: none; z-index: 2000; }
     </style>
 </head>
 <body>
 
-    <h1>Plagg Prod</h1>
-    <div id="productContainer"></div>
+    <header><h1>Plagg Prod</h1></header>
 
-    <footer>
-        <button class="admin-trigger" onclick="openLoginModal()" style="background:transparent; color:#555; border:none; cursor:pointer;">⚙️</button>
+    <div class="container" id="productContainer"></div>
+
+    <footer style="margin-top:50px; padding:20px; color:#555;">
+        <button onclick="document.getElementById('loginModal').style.display='block'" style="background:transparent; color:#555; border:none; cursor:pointer;">⚙️</button>
     </footer>
 
     <div id="toast"></div>
 
-    <div id="loginModal" class="modal">
-        <div class="modal-content">
-            <h3>Вход администратора</h3>
-            <input type="text" id="adminUser" placeholder="Имя">
-            <input type="password" id="adminPass" placeholder="Пароль">
-            <button onclick="authAdmin()">Войти</button>
-            <button onclick="closeModal('loginModal')" style="background:none; color:white;">Отмена</button>
-        </div>
-    </div>
+    <div id="loginModal" class="modal"><div class="modal-content">
+        <h3>Вход админа</h3>
+        <input type="text" id="adminUser" placeholder="Имя">
+        <input type="password" id="adminPass" placeholder="Пароль">
+        <button onclick="authAdmin()">Войти</button>
+    </div></div>
 
-    <div id="adminModal" class="modal">
-        <div class="modal-content" style="width: 400px;">
-            <h3>Настройки</h3>
-            <div id="adminFields"></div>
-            <button onclick="saveChanges()">Сохранить</button>
-        </div>
-    </div>
+    <div id="adminModal" class="modal"><div class="modal-content" style="width:400px">
+        <h3>Управление</h3>
+        <button onclick="addProductField()">+ Добавить</button>
+        <div id="adminFields"></div>
+        <button onclick="saveChanges()">Сохранить</button>
+        <button onclick="closeAll()">Закрыть</button>
+    </div></div>
 
     <script>
-        // Показ уведомления (вместо alert)
-        function showToast(msg, color = "#28a745") {
-            const toast = document.getElementById('toast');
-            toast.innerText = msg;
-            toast.style.background = color;
-            toast.style.display = 'block';
-            setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        let products = JSON.parse(localStorage.getItem('plagg_products')) || [
+            { name: "Водяной знак", price: 50, img: "" },
+            { name: "Заказ эдита", price: 350, img: "" }
+        ];
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg; t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 2000);
         }
 
-        // Вход в админку (вместо prompt)
-        function openLoginModal() { document.getElementById('loginModal').style.display = 'block'; }
-        
         function authAdmin() {
-            const u = document.getElementById('adminUser').value;
-            const p = document.getElementById('adminPass').value;
-            if(u === "Plagg" && p === "plagg_nn") {
+            if(document.getElementById('adminUser').value === "Plagg" && document.getElementById('adminPass').value === "plagg_nn") {
                 document.getElementById('loginModal').style.display = 'none';
-                openAdmin();
-            } else {
-                showToast("Ошибка доступа!", "#dc3545");
-            }
+                document.getElementById('adminModal').style.display = 'block';
+                renderAdmin();
+            } else { showToast("Ошибка!"); }
         }
-        
-        // ... остальной код (render, save, и т.д.) без изменений ...
-        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        function render() {
+            const cont = document.getElementById('productContainer');
+            cont.innerHTML = products.map((p, i) => `
+                <div class="card">
+                    <img src="${p.img || 'https://via.placeholder.com/250x150'}">
+                    <h3>${p.name}</h3>
+                    <p><b>${p.price} звезд</b></p>
+                    <button>Купить</button>
+                </div>
+            `).join('');
+        }
+
+        function renderAdmin() {
+            const f = document.getElementById('adminFields');
+            f.innerHTML = products.map((p, i) => `
+                <div style="border:1px solid #444; margin:10px 0; padding:10px;">
+                    <input value="${p.name}" class="p-name" placeholder="Название">
+                    <input value="${p.price}" class="p-price" placeholder="Цена">
+                    <input value="${p.img}" class="p-img" placeholder="Ссылка на фото">
+                </div>
+            `).join('');
+        }
+
+        function addProductField() {
+            products.push({name: "Новый", price: 0, img: ""});
+            renderAdmin();
+        }
+
+        function saveChanges() {
+            const names = document.querySelectorAll('.p-name');
+            const prices = document.querySelectorAll('.p-price');
+            const imgs = document.querySelectorAll('.p-img');
+            products = Array.from(names).map((n, i) => ({
+                name: n.value, price: prices[i].value, img: imgs[i].value
+            }));
+            localStorage.setItem('plagg_products', JSON.stringify(products));
+            showToast("Сохранено!");
+            render();
+            closeAll();
+        }
+
+        function closeAll() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
+
+        render();
     </script>
 </body>
 </html>
