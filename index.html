@@ -8,16 +8,11 @@
         body { font-family: 'Segoe UI', sans-serif; background: #121212; color: white; text-align: center; margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
         header { padding: 40px 20px; background: #1a1a1a; border-bottom: 2px solid #ffcc00; }
         header h1 { margin: 0; color: #ffcc00; font-size: 2.5em; letter-spacing: 2px; }
-        
         .container { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 30px; flex: 1; padding: 20px; }
         .card { background: #1e1e1e; padding: 0 0 20px 0; border-radius: 15px; width: 250px; border: 1px solid #333; overflow: hidden; }
         .card img { width: 100%; height: 150px; object-fit: cover; }
-        
         button { background: #ffcc00; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px; font-weight: bold; margin-top: 10px; }
         
-        footer { margin-top: 50px; padding: 20px; font-size: 0.8em; color: #888; border-top: 1px solid #333; }
-        .admin-trigger { background: transparent; color: #555; border: none; cursor: pointer; font-size: 0.9em; margin-top: 10px; }
-
         /* Модальные окна */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; overflow-y: auto; }
         .modal-content { background: #252525; margin: 5% auto; padding: 30px; width: 350px; border-radius: 15px; border: 1px solid #444; }
@@ -35,21 +30,27 @@
     <footer>
         <p>© 2026 Plagg Prod. Все права защищены.</p>
         <p>Важное примечание: Продавец не несет ответственности за комиссию платформы при переводе средств.</p>
-        <button class="admin-trigger" onclick="document.getElementById('loginModal').style.display='block'">⚙️</button>
+        <button class="admin-trigger" onclick="document.getElementById('loginModal').style.display='block'" style="background:transparent; color:#555; border:none; cursor:pointer;">⚙️</button>
     </footer>
 
     <div id="toast"></div>
+
+    <div id="buyModal" class="modal"><div class="modal-content">
+        <h2 id="buyTitle">Название товара</h2>
+        <p>Напишите мне, чтобы сделать заказ:</p>
+        <a href="https://t.me/Plagg_nn" target="_blank" style="display:block; background:#0088cc; color:white; padding:15px; text-decoration:none; border-radius:8px; font-weight:bold; margin-top:10px;">Открыть Telegram</a>
+        <button onclick="closeModal('buyModal')" style="background:none; color:white; margin-top:15px;">Закрыть</button>
+    </div></div>
 
     <div id="loginModal" class="modal"><div class="modal-content">
         <h3>Вход админа</h3>
         <input type="text" id="adminUser" placeholder="Имя">
         <input type="password" id="adminPass" placeholder="Пароль">
         <button onclick="authAdmin()">Войти</button>
-        <button onclick="closeModal('loginModal')" style="background:none; color:white;">Назад</button>
     </div></div>
 
     <div id="adminModal" class="modal"><div class="modal-content" style="width:400px">
-        <h3>Управление товарами</h3>
+        <h3>Управление</h3>
         <button onclick="addProductField()">+ Добавить</button>
         <div id="adminFields"></div>
         <button onclick="saveChanges()">Сохранить</button>
@@ -69,6 +70,11 @@
             setTimeout(() => t.style.display = 'none', 2000);
         }
 
+        function openBuy(name) {
+            document.getElementById('buyTitle').innerText = name;
+            document.getElementById('buyModal').style.display = 'block';
+        }
+
         function authAdmin() {
             if(document.getElementById('adminUser').value === "Plagg" && document.getElementById('adminPass').value === "plagg_nn") {
                 document.getElementById('loginModal').style.display = 'none';
@@ -84,7 +90,7 @@
                     <img src="${p.img || 'https://via.placeholder.com/250x150'}">
                     <h3>${p.name}</h3>
                     <p><b>${p.price} звезд</b></p>
-                    <button>Купить</button>
+                    <button onclick="openBuy('${p.name}')">Купить</button>
                 </div>
             `).join('');
         }
