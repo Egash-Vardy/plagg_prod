@@ -7,38 +7,32 @@
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #121212; color: white; text-align: center; margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
         header { padding: 40px 20px; background: #1a1a1a; border-bottom: 2px solid #ffcc00; }
-        header h1 { margin: 0; color: #ffcc00; font-size: 2.5em; letter-spacing: 2px; }
         .container { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 30px; flex: 1; padding: 20px; }
         .card { background: #1e1e1e; padding: 0 0 20px 0; border-radius: 15px; width: 250px; border: 1px solid #333; overflow: hidden; }
         .card img { width: 100%; height: 150px; object-fit: cover; }
         button { background: #ffcc00; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px; font-weight: bold; margin-top: 10px; }
         
-        /* Модальные окна */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; overflow-y: auto; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; overflow-y: auto; }
         .modal-content { background: #252525; margin: 5% auto; padding: 30px; width: 350px; border-radius: 15px; border: 1px solid #444; }
-        input { width: 90%; padding: 10px; margin: 5px 0; background: #333; border: 1px solid #555; color: white; border-radius: 5px; }
-        
+        input { width: 90%; padding: 10px; margin: 5px 0; background: #333; border: 1px solid #555; color: white; border-radius: 5px; display: block; margin-left: auto; margin-right: auto; }
         #toast { position: fixed; bottom: 20px; right: 20px; background: #28a745; color: white; padding: 15px 25px; border-radius: 8px; display: none; z-index: 2000; }
     </style>
 </head>
 <body>
 
     <header><h1>Plagg Prod</h1></header>
-
     <div class="container" id="productContainer"></div>
 
     <footer>
-        <p>© 2026 Plagg Prod. Все права защищены.</p>
-        <p>Важное примечание: Продавец не несет ответственности за комиссию платформы при переводе средств.</p>
-        <button class="admin-trigger" onclick="document.getElementById('loginModal').style.display='block'" style="background:transparent; color:#555; border:none; cursor:pointer;">⚙️</button>
+        <p>© 2026 Plagg Prod. Продавец не отвечает за комиссию.</p>
+        <button onclick="document.getElementById('loginModal').style.display='block'" style="background:transparent; color:#555; border:none; cursor:pointer;">⚙️</button>
     </footer>
 
     <div id="toast"></div>
 
     <div id="buyModal" class="modal"><div class="modal-content">
-        <h2 id="buyTitle">Название товара</h2>
-        <p>Напишите мне, чтобы сделать заказ:</p>
-        <a href="https://t.me/Plagg_nn" target="_blank" style="display:block; background:#0088cc; color:white; padding:15px; text-decoration:none; border-radius:8px; font-weight:bold; margin-top:10px;">Открыть Telegram</a>
+        <h2 id="buyTitle"></h2>
+        <a href="https://t.me/Plagg_nn" target="_blank" style="display:block; background:#0088cc; color:white; padding:15px; text-decoration:none; border-radius:8px; font-weight:bold;">Открыть Telegram</a>
         <button onclick="closeModal('buyModal')" style="background:none; color:white; margin-top:15px;">Закрыть</button>
     </div></div>
 
@@ -47,47 +41,30 @@
         <input type="text" id="adminUser" placeholder="Имя">
         <input type="password" id="adminPass" placeholder="Пароль">
         <button onclick="authAdmin()">Войти</button>
+        <button onclick="closeModal('loginModal')" style="background:none; color:white; margin-top:10px;">Назад</button>
     </div></div>
 
-    <div id="adminModal" class="modal"><div class="modal-content" style="width:400px">
-        <h3>Управление</h3>
-        <button onclick="addProductField()">+ Добавить</button>
-        <div id="adminFields"></div>
-        <button onclick="saveChanges()">Сохранить</button>
-        <button onclick="closeModal('adminModal')" style="background:none; color:white;">Закрыть</button>
+    <div id="adminModal" class="modal"><div class="modal-content" style="width:450px">
+        <h3>Админ-панель</h3>
+        <button onclick="addProductField()">+ Добавить товар</button>
+        <div id="adminFields" style="margin-top:15px;"></div>
+        <button onclick="saveChanges()" style="background:#28a745; width:100%;">Сохранить всё</button>
     </div></div>
 
     <script>
         let products = JSON.parse(localStorage.getItem('plagg_products')) || [
-            { name: "Водяной знак", price: 50, img: "" },
-            { name: "Заказ эдита", price: 350, img: "" },
-            { name: "Фото под заказ", price: 85, img: "" }
+            { name: "Водяной знак", price: 50, img: "https://i.postimg.cc/fyDZnrQj/85-3.jpg" },
+            { name: "Водяной знак 2", price: 50, img: "https://i.postimg.cc/pr60YmC0/85-4.jpg" },
+            { name: "Фото под заказ", price: 85, img: "https://i.postimg.cc/B63BxTGm/85.jpg" },
+            { name: "Фото под заказ 2", price: 85, img: "https://i.postimg.cc/7h2Pw25J/85-2.jpg" },
+            { name: "Заказ эдит", price: 350, img: "https://i.postimg.cc/pr60YmC0/85-4.jpg" }
         ];
-
-        function showToast(msg) {
-            const t = document.getElementById('toast');
-            t.innerText = msg; t.style.display = 'block';
-            setTimeout(() => t.style.display = 'none', 2000);
-        }
-
-        function openBuy(name) {
-            document.getElementById('buyTitle').innerText = name;
-            document.getElementById('buyModal').style.display = 'block';
-        }
-
-        function authAdmin() {
-            if(document.getElementById('adminUser').value === "Plagg" && document.getElementById('adminPass').value === "plagg_nn") {
-                document.getElementById('loginModal').style.display = 'none';
-                document.getElementById('adminModal').style.display = 'block';
-                renderAdmin();
-            } else { showToast("Ошибка!"); }
-        }
 
         function render() {
             const cont = document.getElementById('productContainer');
-            cont.innerHTML = products.map(p => `
+            cont.innerHTML = products.map((p, i) => `
                 <div class="card">
-                    <img src="${p.img || 'https://via.placeholder.com/250x150'}">
+                    <img src="${p.img}">
                     <h3>${p.name}</h3>
                     <p><b>${p.price} звезд</b></p>
                     <button onclick="openBuy('${p.name}')">Купить</button>
@@ -98,7 +75,8 @@
         function renderAdmin() {
             const f = document.getElementById('adminFields');
             f.innerHTML = products.map((p, i) => `
-                <div style="border:1px solid #444; margin:10px 0; padding:10px;">
+                <div style="border:1px solid #444; margin-bottom:10px; padding:10px; position:relative;">
+                    <button onclick="removeProduct(${i})" style="background:#dc3545; padding:2px 8px; position:absolute; right:5px; top:5px;">X</button>
                     <input value="${p.name}" class="p-name" placeholder="Название">
                     <input value="${p.price}" class="p-price" placeholder="Цена">
                     <input value="${p.img}" class="p-img" placeholder="Ссылка на фото">
@@ -106,8 +84,21 @@
             `).join('');
         }
 
+        function authAdmin() {
+            if(document.getElementById('adminUser').value === "Plagg" && document.getElementById('adminPass').value === "plagg_nn") {
+                document.getElementById('loginModal').style.display = 'none';
+                document.getElementById('adminModal').style.display = 'block';
+                renderAdmin();
+            } else { alert("Неверно!"); }
+        }
+
         function addProductField() {
-            products.push({name: "Новый", price: 0, img: ""});
+            products.push({name: "Новый товар", price: 0, img: ""});
+            renderAdmin();
+        }
+
+        function removeProduct(i) {
+            products.splice(i, 1);
             renderAdmin();
         }
 
@@ -119,9 +110,16 @@
                 name: n.value, price: prices[i].value, img: imgs[i].value
             }));
             localStorage.setItem('plagg_products', JSON.stringify(products));
-            showToast("Сохранено!");
             render();
             closeModal('adminModal');
+            document.getElementById('toast').innerText = "Сохранено!";
+            document.getElementById('toast').style.display = 'block';
+            setTimeout(() => document.getElementById('toast').style.display = 'none', 2000);
+        }
+
+        function openBuy(name) {
+            document.getElementById('buyTitle').innerText = name;
+            document.getElementById('buyModal').style.display = 'block';
         }
 
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
